@@ -1,0 +1,21 @@
+meta {
+  name: POST
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{HOST}}/api/city
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "latitude": "6.66",
+    "longitude": "6.88",
+    "name": "Montpellier",
+    "population": 12
+  }
+  
+}

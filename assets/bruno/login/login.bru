@@ -1,0 +1,18 @@
+meta {
+  name: login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{HOST}}/swagger/users/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "admin@local.dev",
+    "password": "admin"
+  }
+}

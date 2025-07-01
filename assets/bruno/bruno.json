@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "MSPR_502",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

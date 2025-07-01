@@ -1,0 +1,21 @@
+meta {
+  name: PUT
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{HOST}}/api/statement/4
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "latitude": "6.66",
+    "longitude": "6.88",
+    "name": "Montpellier",
+    "population": 14
+  }
+  
+}

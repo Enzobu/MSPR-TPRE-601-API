@@ -1,0 +1,22 @@
+meta {
+  name: mortality rate
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{HOST}}/swagger/predictions/mortality-rate?disease_id=1&start_date=2025-06-29&end_date=2025-06-30&country_id=1
+  body: none
+  auth: bearer
+}
+
+params:query {
+  disease_id: 1
+  start_date: 2025-06-29
+  end_date: 2025-06-30
+  country_id: 1
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MTI5NDg1MSwianRpIjoiMmEzNTI2NWMtNjJmOS00ZmMzLWFmOTEtMzZiYTU0YzkwM2FlIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NTEyOTQ4NTEsImNzcmYiOiI1OGJiOTM1OS1lZTIyLTQwYjMtYjhiMy1iMDlkZTVjYzdlNDAiLCJleHAiOjE3NTEzMDIwNTF9.jQuUcwqwMHEjQojWV78l2y4er1rxDyFJ8sKyFs-vtTE
+}
