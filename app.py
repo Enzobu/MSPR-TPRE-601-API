@@ -6,7 +6,7 @@ from flask_cors import CORS                                                     
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity  # type: ignore
 from controller import climat_type_controller, continent_controller, country_climat_type_controller
 from controller import country_controller, disease_controller, region_controller, statement_controller
-from controller import login_controller, prediction_controller
+from controller import login_controller, prediction_controller, log_controller
 from connect_db import get_db_connection
 from datetime import timedelta
 
@@ -60,6 +60,7 @@ api.add_namespace(region_controller.region_namespace, path='/swagger')
 api.add_namespace(statement_controller.statement_namespace, path='/swagger')
 api.add_namespace(login_controller.user_namespace, path='/swagger')
 api.add_namespace(prediction_controller.prediction_namespace, path='/swagger')
+api.add_namespace(log_controller.log_namespace, path='/swagger')
 
 db_connection = get_db_connection()
 if not db_connection:
