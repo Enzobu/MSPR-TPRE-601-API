@@ -1,0 +1,19 @@
+meta {
+  name: metrics
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{HOST}}/swagger/metrics/get?id_country=1
+  body: none
+  auth: bearer
+}
+
+params:query {
+  id_country: 1
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MTU1NDYyMSwianRpIjoiMzgwZjMzMzUtYWQ0YS00OTE0LWIzOGQtNjYwNzQxN2ZhMzI4IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NTE1NTQ2MjEsImNzcmYiOiIyNTdmN2Q0MS1jYmE4LTQ4ODItYWNiZC1lZGE1ZDQxMzNiOTAiLCJleHAiOjE3NTE1NjE4MjF9.wQEepYdwdviNZnmIk8_zBF9OhKtHAKNkqkKg0eufqu0
+}
