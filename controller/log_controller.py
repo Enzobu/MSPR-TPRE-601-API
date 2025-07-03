@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required         # type: ignore
 from connect_db import get_db_connection
 from decimal import Decimal
 
-log_namespace = Namespace('metrics', description="Gestion des métriques")
+log_namespace = Namespace('log', description="Gestion des métriques")
 
 # Modèle complet pour la réponse
 metrics_response_model = log_namespace.model('MetricsResponse', {
@@ -29,7 +29,7 @@ error_model = log_namespace.model('ErrorResponse', {
     'error': fields.String(description="Message d'erreur", example="Une erreur est survenue")
 })
 
-@log_namespace.route('/log/get')
+@log_namespace.route('/logs/get')
 class MetricsByCountryResource(Resource):
 
     @jwt_required()
