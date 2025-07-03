@@ -1,0 +1,19 @@
+meta {
+  name: logs
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{HOST}}/swagger/logs/get
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~id_country: 2
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MTU1NTY3OCwianRpIjoiNzIwZDRhN2ItMmYyZC00YzU5LWEyMTctNzMxZDBkZWQyYmI0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NTE1NTU2NzgsImNzcmYiOiI0MDVmODJhYi0wZmVhLTQzNTEtYWNmYS1jYTdhMzk0MzcwM2EiLCJleHAiOjE3NTE1NjI4Nzh9.mHnZ2jYzJr_ExCi8q8sZssnGAuqvnAsFo9B0SnU4Pxk
+}
