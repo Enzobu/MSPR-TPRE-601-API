@@ -15,15 +15,20 @@ Configuration requise :
 
 """
 
-import psycopg2  # type: ignore
+import os
+import psycopg2                 # type: ignore
+from dotenv import load_dotenv  # type:ignore
 
+load_dotenv()
+
+print(os.getenv("DB_HOST"))
 
 DATABASE = {
-    "host": "qg.enzo-palermo.com",
-    "database": "mspr502",
-    "user": "mspr502",
-    "password": "s5t4v5",
-    "port": 5432
+    "host": os.getenv("DB_HOST"),
+    "database": os.getenv("DB_DATABASE"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "port": os.getenv("DB_PORT")
 }
 
 def get_db_connection():
