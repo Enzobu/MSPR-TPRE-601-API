@@ -30,9 +30,26 @@ statement_model = statement_namespace.model('Statement', {
 
 pagination_parser = statement_namespace.parser()
 pagination_parser.add_argument('page', type=int, required=False, default=1, help='Numéro de la page')
-pagination_parser.add_argument('per_page', type=int, required=False, default=100, help="Nombre d'éléments par page")
+pagination_parser.add_argument(
+    'per_page',
+    type=int,
+    required=False,
+    default=100,
+    help="Nombre d'éléments par page"
+)
 
 def fetch_statements(page=1, per_page=100):
+    """
+    Récupère une liste paginée de statements depuis la base de données.
+
+    Args:
+        page (int, optional): Numéro de page à récupérer. Par défaut 1.
+        per_page (int, optional): Nombre d'éléments par page. Par défaut 100.
+
+    Returns:
+        list[dict]: Liste de statements ou liste vide en cas d'erreur.
+    """
+
     try:
         offset = (page - 1) * per_page
         with DBConnection() as conn:
@@ -50,6 +67,17 @@ def fetch_statements(page=1, per_page=100):
 @statement_controller.route('/statements', methods=['GET'])
 @jwt_required()
 def get_statements():
+    """
+    Route API pour récupérer tous les statements avec pagination.
+
+    Query Parameters:
+        page (int): Numéro de page.
+        per_page (int): Nombre d’éléments par page.
+
+    Returns:
+        Response: JSON contenant les statements ou une erreur 404.
+    """
+
     page = request.args.get('page', default=1, type=int)
     per_page = request.args.get('per_page', default=100, type=int)
     statements = fetch_statements(page, per_page)
@@ -145,7 +173,7 @@ def create_statement():
             "active": new_statement["active"],
             "total_tests": new_statement.get("total_tests"),
             "id_disease": new_statement["id_disease"],
-            "id_disease": new_statement["id_country"]
+            "id_country": new_statement["id_country"]
         }), 201
 
     except Exception as e:
@@ -232,7 +260,7 @@ def update_statement(statement_id):
             "active": updated_statement_data[5],
             "total_tests": updated_statement_data[6],
             "id_disease": updated_statement_data[7],
-            "id_disease": updated_statement_data[8]
+            "id_country": updated_statement_data[8]
         }), 200
 
     except Exception as e:
@@ -273,11 +301,29 @@ def delete_statement(statement_id):
 
 @statement_namespace.route('/statements')
 class Statements(Resource):
+    """
+    Ressource RESTX pour gérer la récupération paginée de tous les statements.
+
+    Méthodes:
+        get: Récupère les statements avec pagination.
+    """
+
     @jwt_required()
     @statement_namespace.doc(security='Bearer', description="Récupère tous les statements avec pagination.")
     @statement_namespace.expect(pagination_parser)
     @statement_namespace.marshal_list_with(statement_model)
     def get(self):
+        """
+        Récupère tous les statements avec pagination.
+
+        Query Parameters:
+            page (int): Numéro de la page.
+            per_page (int): Nombre d'éléments par page.
+
+        Returns:
+            list: Liste de statements au format JSON.
+        """
+
         args = pagination_parser.parse_args()
         page = args.get('page')
         per_page = args.get('per_page')

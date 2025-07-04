@@ -1,8 +1,13 @@
+"""
+Module Flask pour la récupération des logs et métriques par pays.
+Ce module fournit une route pour consulter les logs de prédiction associés à un pays.
+"""
+
+from decimal import Decimal
 from flask import request                           # type: ignore
 from flask_restx import Namespace, Resource, fields # type: ignore
 from flask_jwt_extended import jwt_required         # type: ignore
 from connect_db import get_db_connection
-from decimal import Decimal
 
 log_namespace = Namespace('log', description="Gestion des métriques")
 
@@ -31,6 +36,10 @@ error_model = log_namespace.model('ErrorResponse', {
 
 @log_namespace.route('/logs/get')
 class MetricsByCountryResource(Resource):
+    """
+    Ressource API pour récupérer les métriques d'un pays, avec ses données associées,
+    depuis les logs des prédictions.
+    """
 
     @jwt_required()
     @log_namespace.response(200, 'Succès', metrics_response_model)
@@ -84,41 +93,42 @@ class MetricsByCountryResource(Resource):
                             "id_region": log_row[12]
                         }
                     }, 200
-                else:
-                    cur.execute("""
-                        SELECT 
-                            l.id_log, l._date, l.is_success, l.error_string,
-                            c.id_country, c.name, c.iso_code, c.population, c.pib, c.latitude, c.longitude, c.id_continent, c.id_region
-                        FROM log l
-                        INNER JOIN country c ON l.id_country = c.id_country
-                        ORDER BY l._date DESC
-                    """)
-                    log_rows = rows = cur.fetchall()
 
-                    if not log_rows:
-                        return {"error": "Aucune métrique trouvée pour le pays donné"}, 400
+                # Sinon : récupérer toutes les métriques triées par date décroissante
+                cur.execute("""
+                    SELECT 
+                        l.id_log, l._date, l.is_success, l.error_string,
+                        c.id_country, c.name, c.iso_code, c.population, c.pib, c.latitude, c.longitude, c.id_continent, c.id_region
+                    FROM log l
+                    INNER JOIN country c ON l.id_country = c.id_country
+                    ORDER BY l._date DESC
+                """)
+                log_rows = cur.fetchall()
 
-                    results = []
-                    for log_row in log_rows:
-                        results.append({
-                            "id_log": log_row[0],
-                            "_date": log_row[1].strftime("%Y-%m-%d"),
-                            "is_success": log_row[2],
-                            "error_string": log_row[3],
-                            "country": {
-                                "id_country": log_row[4],
-                                "name": log_row[5],
-                                "iso_code": log_row[6],
-                                "population": to_float(log_row[7]),
-                                "pib": to_float(log_row[8]),
-                                "latitude": to_float(log_row[9]),
-                                "longitude": to_float(log_row[10]),
-                                "id_continent": log_row[11],
-                                "id_region": log_row[12]
-                            }
-                        })
+                if not log_rows:
+                    return {"error": "Aucune métrique trouvée pour le pays donné"}, 400
 
-                    return results, 200
+                results = []
+                for log_row in log_rows:
+                    results.append({
+                        "id_log": log_row[0],
+                        "_date": log_row[1].strftime("%Y-%m-%d"),
+                        "is_success": log_row[2],
+                        "error_string": log_row[3],
+                        "country": {
+                            "id_country": log_row[4],
+                            "name": log_row[5],
+                            "iso_code": log_row[6],
+                            "population": to_float(log_row[7]),
+                            "pib": to_float(log_row[8]),
+                            "latitude": to_float(log_row[9]),
+                            "longitude": to_float(log_row[10]),
+                            "id_continent": log_row[11],
+                            "id_region": log_row[12]
+                        }
+                    })
+
+                return results, 200
 
         except Exception as e:
             return {"error": str(e)}, 500

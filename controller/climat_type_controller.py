@@ -101,7 +101,8 @@ def create_climat_type():
     """
     Crée un nouveau type de climat dans la base de données.
 
-    :return: Détails du type de climat créé avec un code de statut 201, ou une erreur si une exception survient.
+    :return: Détails du type de climat créé avec un code de statut 201,
+    ou une erreur si une exception survient.
     """
     try:
         data = request.json
@@ -119,7 +120,11 @@ def create_climat_type():
             new_id = cursor.fetchone()[0]
             conn.commit()
 
-        return jsonify({"id_climat_type": new_id, "name": data["name"], "description": data.get("description")}), 201
+        return jsonify({
+            "id_climat_type": new_id,
+            "name": data["name"],
+            "description": data.get("description")
+        }), 201
     except IntegrityError:
         return jsonify({"error": "Duplicate climat type ID or name"}), 409
     except Exception as e:
@@ -237,9 +242,9 @@ class ClimatTypeById(Resource):
         :param climat_type_id: L'ID du type de climat à récupérer.
         :return: Détails du type de climat en JSON si trouvé, ou une erreur avec un code 404 si non trouvé.
         """
-        response, status_code = get_climat_type_by_id(climat_type_id)
-        if status_code != 200:
-            climat_type_namespace.abort(status_code, response.get_json().get("error", "Erreur inconnue"))
+        response = get_climat_type_by_id(climat_type_id)
+        if response.status_code != 200:
+            climat_type_namespace.abort(response.status_code, response.get_json().get("error", "Erreur inconnue"))
         return response.get_json()
 
     @jwt_required()
