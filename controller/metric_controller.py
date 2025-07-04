@@ -1,8 +1,18 @@
+"""
+Module de gestion des métriques via une API Flask RESTX sécurisée avec JWT.
+
+Ce module expose une route `/metrics/get` permettant de récupérer :
+- Les dernières métriques disponibles pour un pays donné.
+- Les moyennes des scores R² et R² bis de son continent.
+
+Requiert une connexion à la base de données et une authentification JWT.
+"""
+
+from decimal import Decimal
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required  # type: ignore
 from connect_db import get_db_connection
-from decimal import Decimal
 
 metric_namespace = Namespace('metrics', description="Gestion des métriques")
 
@@ -28,6 +38,12 @@ error_model = metric_namespace.model('ErrorResponse', {
 
 @metric_namespace.route('/metrics/get')
 class MetricsByCountryResource(Resource):
+    """
+    Ressource REST pour récupérer les métriques d'un pays donné et
+    les moyennes R² / R² bis du continent correspondant.
+
+    Requiert un JWT valide pour l'accès.
+    """
 
     @jwt_required()
     @metric_namespace.response(200, 'Succès', metrics_response_model)

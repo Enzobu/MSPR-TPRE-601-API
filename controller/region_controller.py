@@ -43,11 +43,10 @@ Exemple de réponse pour POST /region :
 
 """
 
-from flask import Blueprint, jsonify, request       # type: ignore
-from flask_jwt_extended import jwt_required         # type: ignore
-from flask_restx import Namespace, Resource, fields # type: ignore
-import psycopg2.extras                              # type: ignore
-from flask_restx import reqparse                    # type: ignore
+from flask import Blueprint, jsonify, request                   # type: ignore
+from flask_jwt_extended import jwt_required                     # type: ignore
+from flask_restx import Namespace, Resource, fields, reqparse   # type: ignore
+import psycopg2.extras                                          # type: ignore
 from connect_db import DBConnection
 
 
@@ -169,10 +168,6 @@ def create_region():
 
     except Exception as e:
         print("Erreur lors de la création de la région :", e)
-        return {"error": "An error occurred"}, 500
-
-    except Exception as e:
-        print("Erreur lors de la création de la région :", e)
         return jsonify({"error": "An error occurred"}), 500
 
 @region_controller.route('/region/<int:region_id>', methods=['PUT'])
@@ -249,18 +244,48 @@ def delete_region(region_id):
 
 @region_namespace.route('/regions')
 class Regions(Resource):
+    """
+    Ressource pour gérer la collection des régions.
+
+    Méthodes disponibles :
+    - GET : Récupère toutes les régions.
+
+    Cette classe sert d'interface RESTful pour accéder à toutes les régions.
+    """
+
     @jwt_required()
     @region_namespace.doc(security='Bearer', description="Récupère toutes les régions.")
     @region_namespace.marshal_list_with(region_model)
     def get(self):
+        """
+        Récupère la liste de toutes les régions.
+
+        :return: Liste des régions sérialisée selon region_model, avec HTTP 200.
+        """
+
         return get_regions()[0]
 
 @region_namespace.route('/region')
 class RegionPost(Resource):
+    """
+    Ressource pour créer une nouvelle région.
+
+    Méthodes disponibles :
+    - POST : Crée une région en fournissant un nom.
+
+    Le corps JSON doit contenir la clé "name".
+    """
+
     @jwt_required()
     @region_namespace.doc(security='Bearer', description="Crée une nouvelle région.")
     @region_namespace.expect(region_parser)
     def post(self):
+        """
+        Crée une nouvelle région à partir des données fournies.
+
+        :return: Détails de la région créée avec HTTP 201, ou message d'erreur avec code approprié.
+        """
+
         response, status_code = create_region()
         if status_code != 201:
             region_namespace.abort(status_code, response.get("error", "Erreur inconnue"))
@@ -268,27 +293,66 @@ class RegionPost(Resource):
 
 @region_namespace.route('/region/<int:region_id>')
 class Region(Resource):
+    """
+    Ressource pour manipuler une région spécifique via son ID.
+
+    Méthodes disponibles :
+    - GET : Récupère une région par ID.
+    - PUT : Met à jour une région existante.
+    - DELETE : Supprime une région.
+    """
     @jwt_required()
     @region_namespace.doc(security='Bearer', description="Récupère une région spécifique par ID.")
     @region_namespace.marshal_with(region_model)
     def get(self, region_id):
+        """
+        Récupère une région donnée par son ID.
+
+        :param region_id: ID de la région.
+        :return: Détails de la région avec HTTP 200, ou message d'erreur si non trouvée.
+        """
         return get_region(region_id)[0]
 
     @jwt_required()
     @region_namespace.doc(security='Bearer', description="Met à jour une région existante.")
     @region_namespace.expect(region_parser)
     def put(self, region_id):
+        """
+        Met à jour une région existante avec les données fournies.
+
+        :param region_id: ID de la région à mettre à jour.
+        :return: Détails mis à jour avec HTTP 200, ou message d'erreur selon cas.
+        """
         return update_region(region_id)[0]
 
     @jwt_required()
     @region_namespace.doc(security='Bearer', description="Supprime une région.")
     def delete(self, region_id):
+        """
+        Supprime une région donnée par son ID.
+
+        :param region_id: ID de la région à supprimer.
+        :return: Message de confirmation avec HTTP 200, ou erreur si non trouvée.
+        """
         return delete_region(region_id)[0]
 
 @region_namespace.route('/region/name/<string:region_name>')
 class RegionByName(Resource):
+    """
+    Ressource pour récupérer une région spécifique via son nom.
+
+    Méthodes disponibles :
+    - GET : Récupère une région par son nom.
+    """
+
     @jwt_required()
     @region_namespace.doc(security='Bearer', description="Récupère une région par nom.")
     @region_namespace.marshal_with(region_model)
     def get(self, region_name):
+        """
+        Récupère une région par son nom.
+
+        :param region_name: Nom de la région.
+        :return: Détails de la région avec HTTP 200, ou message d'erreur si non trouvée.
+        """
         return get_region_by_name(region_name)[0]

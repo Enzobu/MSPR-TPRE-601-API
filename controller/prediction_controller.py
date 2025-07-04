@@ -1,7 +1,18 @@
-from flask import request, jsonify
+"""
+Module de gestion des prédictions liées aux maladies via une API Flask RESTX sécurisée avec JWT.
+
+Ce module fournit plusieurs endpoints pour récupérer :
+- Les prédictions par maladie et pays sur une période donnée.
+- Le taux de transmission calculé à partir des prédictions.
+- Le taux de mortalité journalier calculé à partir des prédictions et population.
+
+La connexion à la base de données est gérée via DBConnection/get_db_connection.
+"""
+
+from datetime import datetime, timedelta
+from flask import request
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required     # type: ignore
-from datetime import datetime, timedelta
 from connect_db import DBConnection, get_db_connection
 
 prediction_namespace = Namespace('prediction', description="Gestion des prédictions")
@@ -35,6 +46,13 @@ prediction_model = prediction_namespace.model('Prediction', {
 
 @prediction_namespace.route('/predictions/get')
 class PredictionResource(Resource):
+    """
+    Ressource REST pour récupérer les prédictions d'une maladie entre deux dates
+    (optionnellement filtrées par pays).
+
+    Requiert un JWT valide pour l'accès.
+    """
+
     @jwt_required()
     @prediction_namespace.response(200, 'Succès')
     @prediction_namespace.response(400, 'Requête invalide')
@@ -64,7 +82,7 @@ class PredictionResource(Resource):
 
             with DBConnection() as conn:
                 cur = conn.cursor()
-                
+
                 query = """
                     SELECT 
                         id_prediction, id_country, id_disease, ds,
@@ -78,13 +96,13 @@ class PredictionResource(Resource):
                     AND ds BETWEEN %s AND %s
                 """
                 params = [disease_id, start_date, end_date]
-                
+
                 if country_id:
                     query += " AND id_country = %s"
                     params.append(country_id)
-                    
+
                 query += " ORDER BY ds ASC, id_country ASC, id_prediction ASC;"
-                
+
                 cur.execute(query, params)
 
                 rows = cur.fetchall()
@@ -120,15 +138,27 @@ class PredictionResource(Resource):
 
                 return predictions, 200
 
-        except Exception as e:
+        except Exception:
             return {'msg': "Erreur serveur"}, 500
 
 @prediction_namespace.route('/predictions/transmission-rate')
 class TransmissionRateResource(Resource):
+    """
+    Ressource REST pour calculer le taux de transmission journalier d'une maladie
+    dans un pays donné sur une période.
+
+    Méthodes internes pour récupérer les cas nouveaux et cas totaux.
+
+    Requiert un JWT valide pour l'accès.
+    """
 
     conn = get_db_connection()
 
     def get_new_cases(self, country_id, disease_id, date, conn):
+        """
+        Récupère le nombre de nouveaux cas prédits pour un pays, maladie et date donnés.
+        """
+
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT yhat
@@ -139,6 +169,9 @@ class TransmissionRateResource(Resource):
             return result[0] if result else 0.0
 
     def get_total_cases(self, country_id, disease_id, date, conn):
+        """
+        Récupère le total cumulé des cas prédits jusqu'à une date donnée.
+        """
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT SUM(yhat)
@@ -153,6 +186,11 @@ class TransmissionRateResource(Resource):
     @prediction_namespace.response(400, 'Requête invalide')
     @prediction_namespace.response(500, 'Erreur serveur')
     def get(self):
+        """
+        Calcule le taux de transmission quotidien (nouveaux cas / total cas cumulés)
+        sur la période spécifiée.
+        """
+
         country_id = request.args.get('country_id')
         disease_id = request.args.get('disease_id')
         start_date_str = request.args.get('start_date')
@@ -195,10 +233,22 @@ class TransmissionRateResource(Resource):
 
 @prediction_namespace.route('/predictions/mortality-rate')
 class MortalityRateResource(Resource):
+    """
+    Ressource REST pour calculer le taux de mortalité journalier d'une maladie
+    dans un pays donné sur une période.
+
+    Méthodes internes pour récupérer la population et le taux de mortalité journalier.
+
+    Requiert un JWT valide pour l'accès.
+    """
 
     conn = get_db_connection()
 
     def get_country_population(self, country_id, conn):
+        """
+        Récupère la population du pays spécifié.
+        """
+
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT population FROM country WHERE id_country = %s
@@ -207,6 +257,11 @@ class MortalityRateResource(Resource):
             return result[0] if result and result[0] else 0
 
     def get_daily_mortality_rate(self, country_id, disease_id, date, conn, population):
+        """
+        Calcule le taux de mortalité pour un jour donné en divisant
+        le nombre de décès par la population.
+        """
+
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT deaths
@@ -223,6 +278,10 @@ class MortalityRateResource(Resource):
     @prediction_namespace.response(400, 'Requête invalide')
     @prediction_namespace.response(500, 'Erreur serveur')
     def get(self):
+        """
+        Calcule le taux de mortalité journalier sur la période spécifiée.
+        """
+
         country_id = request.args.get('country_id')
         disease_id = request.args.get('disease_id')
         start_date_str = request.args.get('start_date')

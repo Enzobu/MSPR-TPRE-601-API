@@ -17,7 +17,10 @@ from connect_db import DBConnection
 
 # Définition du Blueprint et du Namespace
 country_climat_type_controller = Blueprint('country_climat_type_controller', __name__)
-country_climat_type_namespace = Namespace('country_climat_type', description='Gestion des relations pays-types de climat')
+country_climat_type_namespace = Namespace(
+    'country_climat_type',
+    description='Gestion des relations pays-types de climat'
+)
 
 # Modèle pour la documentation de l'API
 documentation_model = country_climat_type_namespace.model('CountryClimatType', {
@@ -38,14 +41,20 @@ def get_all_country_climat_types():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@country_climat_type_controller.route('/country_climat_type/<int:id_climat_type>/<int:id_country>', methods=['GET'])
+@country_climat_type_controller.route(
+    '/country_climat_type/<int:id_climat_type>/<int:id_country>',
+    methods=['GET']
+)
 @jwt_required()
 def get_country_climat_type(id_climat_type, id_country):
     """Récupère une relation spécifique entre un pays et un type de climat."""
     try:
         with DBConnection() as conn:
             cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            cursor.execute("SELECT * FROM country_climat_type WHERE id_climat_type = %s AND id_country = %s", (id_climat_type, id_country))
+            cursor.execute(
+                "SELECT * FROM country_climat_type WHERE id_climat_type = %s AND id_country = %s",
+                (id_climat_type, id_country)
+            )
             result = cursor.fetchone()
 
             if not result:
@@ -66,10 +75,11 @@ def create_country_climat_type():
 
         with DBConnection() as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO country_climat_type (id_climat_type, id_country) VALUES (%s, %s) RETURNING id_climat_type, id_country",
-                (data["id_climat_type"], data["id_country"])
+            query = (
+                "INSERT INTO country_climat_type (id_climat_type, id_country) "
+                "VALUES (%s, %s) RETURNING id_climat_type, id_country"
             )
+            cursor.execute(query, (data["id_climat_type"], data["id_country"]))
             new_entry = cursor.fetchone()
             conn.commit()
 
@@ -80,7 +90,10 @@ def create_country_climat_type():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@country_climat_type_controller.route('/country_climat_type/<int:id_climat_type>/<int:id_country>', methods=['PUT'])
+@country_climat_type_controller.route(
+        '/country_climat_type/<int:id_climat_type>/<int:id_country>',
+        methods=['PUT']
+        )
 @jwt_required()
 def update_country_climat_type(id_climat_type, id_country):
     """Met à jour une relation entre un pays et un type de climat."""
@@ -110,17 +123,22 @@ def update_country_climat_type(id_climat_type, id_country):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@country_climat_type_controller.route('/country_climat_type/<int:id_climat_type>/<int:id_country>', methods=['DELETE'])
+@country_climat_type_controller.route(
+        '/country_climat_type/<int:id_climat_type>/<int:id_country>',
+        methods=['DELETE']
+)
 @jwt_required()
 def delete_country_climat_type(id_climat_type, id_country):
     """Supprime une relation entre un pays et un type de climat."""
     try:
         with DBConnection() as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                "DELETE FROM country_climat_type WHERE id_climat_type = %s AND id_country = %s RETURNING id_climat_type, id_country",
-                (id_climat_type, id_country)
+            query = (
+                "DELETE FROM country_climat_type "
+                "WHERE id_climat_type = %s AND id_country = %s "
+                "RETURNING id_climat_type, id_country"
             )
+            cursor.execute(query, (id_climat_type, id_country))
             deleted = cursor.fetchone()
             conn.commit()
 
@@ -135,36 +153,56 @@ def delete_country_climat_type(id_climat_type, id_country):
 class CountryClimatTypesResource(Resource):
     """Ressource pour récupérer toutes les relations pays-types de climat."""
     @jwt_required()
-    @country_climat_type_namespace.doc(security='Bearer', description="Récupère toutes les relations pays-types de climat.")
+    @country_climat_type_namespace.doc(
+        security='Bearer',
+        description="Récupère toutes les relations pays-types de climat."
+    )
     @country_climat_type_namespace.marshal_list_with(documentation_model)
     def get(self):
+        """Récupère toutes les relations pays-types de climat."""
         return get_all_country_climat_types()[0]
 
 @country_climat_type_namespace.route('/country_climat_type')
-class CountryClimatTypesResource(Resource):
+class CountryClimatTypesResourcePost(Resource):
     """Ressource pour récupérer toutes les relations pays-types de climat."""
     @jwt_required()
-    @country_climat_type_namespace.doc(security='Bearer', description="Ajoute une nouvelle relation pays-type de climat.")
+    @country_climat_type_namespace.doc(
+        security='Bearer',
+        description="Ajoute une nouvelle relation pays-type de climat."
+    )
     @country_climat_type_namespace.expect(documentation_model)
     def post(self):
+        """Ajoute une nouvelle relation pays-type de climat."""
         return create_country_climat_type()[0]
 
 @country_climat_type_namespace.route('/country_climat_type/<int:id_climat_type>/<int:id_country>')
 class CountryClimatTypeResource(Resource):
     """Ressource pour gérer une relation pays-type de climat spécifique."""
     @jwt_required()
-    @country_climat_type_namespace.doc(security='Bearer', description="Récupère une relation pays-type de climat spécifique.")
+    @country_climat_type_namespace.doc(
+        security='Bearer',
+        description="Récupère une relation pays-type de climat spécifique."
+        )
     @country_climat_type_namespace.marshal_with(documentation_model)
     def get(self, id_climat_type, id_country):
+        """Récupère une relation pays-type de climat spécifique."""
         return get_country_climat_type(id_climat_type, id_country)[0]
 
     @jwt_required()
-    @country_climat_type_namespace.doc(security='Bearer', description="Met à jour une relation pays-type de climat.")
+    @country_climat_type_namespace.doc(
+        security='Bearer',
+        description="Met à jour une relation pays-type de climat."
+    )
     @country_climat_type_namespace.expect(documentation_model)
     def put(self, id_climat_type, id_country):
+        """Met à jour une relation pays-type de climat."""
         return update_country_climat_type(id_climat_type, id_country)[0]
 
     @jwt_required()
-    @country_climat_type_namespace.doc(security='Bearer', description="Supprime une relation pays-type de climat.")
+    @country_climat_type_namespace.doc(
+        security='Bearer',
+        description="Supprime une relation pays-type de climat."
+    )
     def delete(self, id_climat_type, id_country):
+        """Supprime une relation pays-type de climat."""
         return delete_country_climat_type(id_climat_type, id_country)[0]

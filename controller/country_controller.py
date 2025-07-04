@@ -19,13 +19,13 @@ country_namespace = Namespace('country', description='Gestion des pays')
 country_model = country_namespace.model('Country', {
     'id_country': fields.Integer(readonly=True, description='ID du pays'),
     'name': fields.String(required=True, description='Nom du pays'),
-    'iso_code': fields.String(required=True, description='Iso code du pays'),  # Changement: iso_code devient un String
+    'iso_code': fields.String(required=True, description='Iso code du pays'),
     'population': fields.Integer(required=True, description='Population du pays'),
     'pib': fields.Float(description='PIB du pays'),
-    'latitude': fields.Float(description='Latitude du pays'),  # Nouveau champ: latitude
-    'longitude': fields.Float(description='Longitude du pays'),  # Nouveau champ: longitude
+    'latitude': fields.Float(description='Latitude du pays'),
+    'longitude': fields.Float(description='Longitude du pays'),
     'id_continent': fields.Integer(required=True, description='ID du continent'),
-    'id_region': fields.Integer(description='ID de la région du pays')  # Nouveau champ: id_region
+    'id_region': fields.Integer(description='ID de la région du pays')
 })
 
 def clean_pib_value(pib_value):
