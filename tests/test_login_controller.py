@@ -33,8 +33,7 @@ class TestLoginResource:
         """Test de login avec données manquantes."""
         response = client.post('/swagger/users/login', json={})
         assert response.status_code == 400
-        # Le contrôleur renvoie d'abord "Donnees invalides" si le JSON est vide
-        assert response.json['msg'] in ['Email et mot de passe requis', 'Donnees invalides']
+        assert response.json['msg'] in ['Email et mot de passe requis', 'Données invalides']
     
     def test_login_invalid_json(self, client):
         """Test de login avec JSON invalide."""
@@ -43,7 +42,7 @@ class TestLoginResource:
         # Un JSON invalide peut causer une erreur serveur 500
         assert response.status_code in [400, 500]
         if response.json:
-            assert 'Donnees invalides' in response.json.get('msg', '') or 'Erreur serveur' in response.json.get('msg', '')
+            assert 'Données invalides' in response.json.get('msg', '') or 'Erreur serveur' in response.json.get('msg', '')
     
     def test_login_missing_email(self, client):
         """Test de login avec email manquant."""
@@ -72,7 +71,7 @@ class TestLoginResource:
         })
         
         assert response.status_code == 404
-        assert 'Utilisateur non trouve' in response.json['msg']
+        assert 'Utilisateur non trouvé' in response.json['msg']
     
     def test_login_wrong_password(self, client, mock_db_connection):
         """Test de login avec mot de passe incorrect."""
@@ -166,8 +165,7 @@ class TestUserListResource:
         """Test de création d'utilisateur avec données invalides."""
         response = client.post('/swagger/users', json={})
         assert response.status_code == 400
-        # Le contrôleur peut renvoyer soit "Donnees invalides" soit le message sur la structure
-        assert response.json['msg'] in ['Veuillez respecter la structure de la table', 'Donnees invalides']
+        assert response.json['msg'] in ['Veuillez respecter la structure de la table', 'Données invalides']
     
     def test_create_user_missing_fields(self, client):
         """Test de création d'utilisateur avec champs manquants."""
@@ -187,7 +185,7 @@ class TestUserListResource:
         response = client.post('/swagger/users', json=sample_user_data)
         
         assert response.status_code == 400
-        assert 'Email dejà utilise' in response.json['msg']
+        assert 'Email déjà utilisé' in response.json['msg']
     
     def test_create_user_server_error(self, client, mock_db_connection, sample_user_data):
         """Test de gestion d'erreur serveur lors de la création."""
@@ -232,7 +230,7 @@ class TestUserResource:
         assert response.status_code == 404
         # La réponse peut être en format différent selon Flask-RESTX
         if response.json and isinstance(response.json, dict):
-            assert 'Utilisateur non trouve' in response.json.get('msg', str(response.json))
+            assert 'Utilisateur non trouvé' in response.json.get('msg', str(response.json))
     
     def test_update_user_success(self, client, mock_db_connection):
         """Test de mise à jour d'utilisateur."""
@@ -284,7 +282,7 @@ class TestUserResource:
             response = client.delete('/swagger/users/1', headers=headers)
         
         assert response.status_code == 200
-        assert 'supprime' in response.json['msg']
+        assert 'supprimé' in response.json['msg']
     
     def test_delete_user_not_found(self, client, mock_db_connection):
         """Test de suppression d'utilisateur inexistant."""
@@ -298,7 +296,7 @@ class TestUserResource:
             response = client.delete('/swagger/users/999', headers=headers)
         
         assert response.status_code == 404
-        assert 'Utilisateur non trouve' in response.json['msg']
+        assert 'Utilisateur non trouvé' in response.json['msg']
 
 
 class TestCheckIfAdmin:

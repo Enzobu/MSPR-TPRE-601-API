@@ -4,12 +4,19 @@ Tests pour le module connect_db.py
 
 import pytest
 from unittest.mock import patch, MagicMock
-import psycopg2
+import os
 
 
 class TestGetDbConnection:
     """Tests pour la fonction get_db_connection."""
     
+    @patch.dict(os.environ, {
+        'DB_HOST': 'qg.enzo-palermo.com',
+        'DB_DATABASE': 'mspr502',
+        'DB_USER': 'mspr502',
+        'DB_PASSWORD': 's5t4v5',
+        'DB_PORT': '5432'
+    })
     @patch('connect_db.psycopg2.connect')
     def test_get_db_connection_success(self, mock_connect):
         """Test de connexion à la base de données réussie."""
@@ -20,15 +27,23 @@ class TestGetDbConnection:
         
         result = get_db_connection()
         
+        # Vérifier que connect a été appelé avec les bons paramètres
         mock_connect.assert_called_once_with(
             host="qg.enzo-palermo.com",
             database="mspr502",
             user="mspr502",
             password="s5t4v5",
-            port=5432
+            port="5432"
         )
         assert result == mock_connection
     
+    @patch.dict(os.environ, {
+        'DB_HOST': 'qg.enzo-palermo.com',
+        'DB_DATABASE': 'mspr502',
+        'DB_USER': 'mspr502',
+        'DB_PASSWORD': 's5t4v5',
+        'DB_PORT': '5432'
+    })
     @patch('connect_db.psycopg2.connect')
     @patch('builtins.print')
     def test_get_db_connection_failure(self, mock_print, mock_connect):
@@ -41,12 +56,8 @@ class TestGetDbConnection:
         result = get_db_connection()
         
         assert result is None
-        # Vérifier que print a été appelé avec le bon message d'erreur et une exception
-        mock_print.assert_called_once()
-        call_args = mock_print.call_args[0]
-        assert call_args[0] == "Erreur lors de la connexion à la base de données :"
-        assert isinstance(call_args[1], Exception)
-        assert str(call_args[1]) == "Connection failed"
+        # Vérifier que print a été appelé avec le bon message d'erreur
+        mock_print.assert_called_with("Erreur lors de la connexion à la base de données :", exception)
 
 
 class TestDBConnection:
@@ -132,6 +143,13 @@ class TestDBConnection:
 class TestTestDbConnection:
     """Tests pour la fonction test_db_connection."""
     
+    @patch.dict(os.environ, {
+        'DB_HOST': 'qg.enzo-palermo.com',
+        'DB_DATABASE': 'mspr502',
+        'DB_USER': 'mspr502',
+        'DB_PASSWORD': 's5t4v5',
+        'DB_PORT': '5432'
+    })
     @patch('connect_db.psycopg2.connect')
     @patch('builtins.print')
     def test_test_db_connection_success(self, mock_print, mock_connect):
@@ -148,11 +166,18 @@ class TestTestDbConnection:
             database="mspr502",
             user="mspr502",
             password="s5t4v5",
-            port=5432
+            port="5432"
         )
         mock_connection.close.assert_called_once()
         mock_print.assert_called_with("Connexion à la base de données réussie.")
     
+    @patch.dict(os.environ, {
+        'DB_HOST': 'qg.enzo-palermo.com',
+        'DB_DATABASE': 'mspr502',
+        'DB_USER': 'mspr502',
+        'DB_PASSWORD': 's5t4v5',
+        'DB_PORT': '5432'
+    })
     @patch('connect_db.psycopg2.connect')
     @patch('builtins.print')
     def test_test_db_connection_failure(self, mock_print, mock_connect):
@@ -164,19 +189,27 @@ class TestTestDbConnection:
         
         test_db_connection()
         
-        # Vérifier que print a été appelé avec le bon message d'erreur et une exception
-        mock_print.assert_called_once()
-        call_args = mock_print.call_args[0]
-        assert call_args[0] == "Erreur lors de la connexion à la base de données :"
-        assert isinstance(call_args[1], Exception)
-        assert "Connection failed" in str(call_args[1])
+        # Vérifier que print a été appelé avec le bon message d'erreur
+        mock_print.assert_called_with("Erreur lors de la connexion à la base de données :", exception)
 
 
 class TestDatabaseConfiguration:
     """Tests pour la configuration de la base de données."""
     
+    @patch.dict(os.environ, {
+        'DB_HOST': 'test_host',
+        'DB_DATABASE': 'test_db',
+        'DB_USER': 'test_user',
+        'DB_PASSWORD': 'test_password',
+        'DB_PORT': '5432'
+    })
     def test_database_config_exists(self):
         """Test que la configuration DATABASE existe."""
+        # Recharger le module pour prendre en compte les nouvelles variables d'environnement
+        import importlib
+        import connect_db
+        importlib.reload(connect_db)
+        
         from connect_db import DATABASE
         
         assert isinstance(DATABASE, dict)
@@ -186,20 +219,39 @@ class TestDatabaseConfiguration:
         assert 'password' in DATABASE
         assert 'port' in DATABASE
     
+    @patch.dict(os.environ, {
+        'DB_HOST': 'qg.enzo-palermo.com',
+        'DB_DATABASE': 'mspr502',
+        'DB_USER': 'mspr502',
+        'DB_PASSWORD': 's5t4v5',
+        'DB_PORT': '5432'
+    })
     def test_database_config_values(self):
         """Test des valeurs de configuration."""
+        # Recharger le module pour prendre en compte les nouvelles variables d'environnement
+        import importlib
+        import connect_db
+        importlib.reload(connect_db)
+        
         from connect_db import DATABASE
         
         assert DATABASE['host'] == "qg.enzo-palermo.com"
         assert DATABASE['database'] == "mspr502"
         assert DATABASE['user'] == "mspr502"
         assert DATABASE['password'] == "s5t4v5"
-        assert DATABASE['port'] == 5432
+        assert DATABASE['port'] == "5432"
 
 
 class TestIntegration:
     """Tests d'intégration pour le module connect_db."""
     
+    @patch.dict(os.environ, {
+        'DB_HOST': 'qg.enzo-palermo.com',
+        'DB_DATABASE': 'mspr502',
+        'DB_USER': 'mspr502',
+        'DB_PASSWORD': 's5t4v5',
+        'DB_PORT': '5432'
+    })
     @patch('connect_db.psycopg2.connect')
     def test_full_workflow(self, mock_connect):
         """Test du workflow complet."""
