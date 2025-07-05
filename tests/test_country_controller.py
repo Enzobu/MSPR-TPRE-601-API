@@ -3,9 +3,9 @@ Tests pour le module country_controller.py
 """
 
 from unittest.mock import patch, MagicMock
-from controller.country_controller import country_namespace, execute_query, clean_pib_value
-from flask_jwt_extended import create_access_token      # type: ignore
 from flask_restx import fields                          # type: ignore
+from flask_jwt_extended import create_access_token      # type: ignore
+from controller.country_controller import country_namespace, execute_query, clean_pib_value
 
 
 class TestCountryController:
