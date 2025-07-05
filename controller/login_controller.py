@@ -5,11 +5,11 @@ Module Flask pour la gestion des utilisateurs :
 - Accès restreint via JWT et vérification d'administrateur
 """
 
-from flask import request
-from flask_restx import Namespace, Resource, fields
+from flask import request                                                           # type: ignore
+from flask_restx import Namespace, Resource, fields                                 # type: ignore
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity  # type: ignore
+import bcrypt                                                                       # type: ignore
 from connect_db import DBConnection
-import bcrypt  # type: ignore
 
 user_namespace = Namespace('user', description="Gestion des utilisateurs")
 
