@@ -4,7 +4,6 @@ Tests pour le module connect_db.py
 
 import pytest
 from unittest.mock import patch, MagicMock
-import psycopg2
 import os
 
 
