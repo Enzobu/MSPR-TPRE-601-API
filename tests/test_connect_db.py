@@ -12,11 +12,11 @@ load_dotenv()
 
 # Variables d'environnement par défaut pour les tests
 DEFAULT_DB_CONFIG = {
-    'DB_HOST': os.getenv('DB_HOST', 'qg.enzo-palermo.com'),
-    'DB_DATABASE': os.getenv('DB_DATABASE', 'mspr502'),
-    'DB_USER': os.getenv('DB_USER', 'mspr502'),
-    'DB_PASSWORD': os.getenv('DB_PASSWORD', 's5t4v5'),
-    'DB_PORT': os.getenv('DB_PORT', '5432')
+    'DB_HOST': os.getenv('DB_HOST'),
+    'DB_DATABASE': os.getenv('DB_DATABASE'),
+    'DB_USER': os.getenv('DB_USER'),
+    'DB_PASSWORD': os.getenv('DB_PASSWORD'),
+    'DB_PORT': os.getenv('DB_PORT')
 }
 
 
@@ -278,25 +278,6 @@ class TestIntegration:
 
 class TestEnvironmentVariableLoading:
     """Tests pour le chargement des variables d'environnement."""
-    
-    def test_env_loading_with_defaults(self):
-        """Test que les valeurs par défaut sont utilisées si .env n'existe pas."""
-        # Simuler l'absence de variables d'environnement
-        with patch.dict(os.environ, {}, clear=True):
-            # Les valeurs par défaut devraient être utilisées
-            config = {
-                'DB_HOST': os.getenv('DB_HOST', 'qg.enzo-palermo.com'),
-                'DB_DATABASE': os.getenv('DB_DATABASE', 'mspr502'),
-                'DB_USER': os.getenv('DB_USER', 'mspr502'),
-                'DB_PASSWORD': os.getenv('DB_PASSWORD', 's5t4v5'),
-                'DB_PORT': os.getenv('DB_PORT', '5432')
-            }
-            
-            assert config['DB_HOST'] == 'qg.enzo-palermo.com'
-            assert config['DB_DATABASE'] == 'mspr502'
-            assert config['DB_USER'] == 'mspr502'
-            assert config['DB_PASSWORD'] == 's5t4v5'
-            assert config['DB_PORT'] == '5432'
     
     def test_env_override(self):
         """Test que les variables d'environnement peuvent surcharger les valeurs par défaut."""
