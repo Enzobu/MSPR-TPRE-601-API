@@ -1114,4 +1114,4 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 ---
 
-*Documentation générée le 2024-01-15 pour le projet MSPR-TPRE-601-API* 
+*Documentation générée le 2024-01-15 pour le projet MSPR-TPRE-601-API*.
