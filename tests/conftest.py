@@ -2,11 +2,14 @@
 Configuration pytest et fixtures communes pour tous les tests.
 """
 
-import pytest
 import sys
 import os
-from unittest.mock import patch, MagicMock
+from datetime import date
 import importlib.util
+from unittest.mock import patch, MagicMock
+import pytest                                       # type: ignore
+from flask_jwt_extended import create_access_token  # type: ignore
+
 
 # Mock psycopg2 avant tout import
 mock_psycopg2 = MagicMock()
@@ -19,12 +22,12 @@ sys.modules['psycopg2.extras'] = mock_psycopg2.extras
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 # Import corrigé pour l'application Flask
-app_file_path = os.path.join(os.path.dirname(__file__), '..', 'app.py')
-if not os.path.exists(app_file_path):
+APP_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'app.py')
+if not os.path.exists(APP_FILE_PATH):
     # Si on est dans le container, le chemin est différent
-    app_file_path = '/app/app.py'
+    APP_FILE_PATH = '/app/app.py'
 
-spec = importlib.util.spec_from_file_location("app_module", app_file_path)
+spec = importlib.util.spec_from_file_location("app_module", APP_FILE_PATH)
 app_module = importlib.util.module_from_spec(spec)
 sys.modules["app_module"] = app_module
 spec.loader.exec_module(app_module)
@@ -53,12 +56,12 @@ def mock_db_connection():
     mock_connection = MagicMock()
     mock_cursor = MagicMock()
     mock_connection.cursor.return_value = mock_cursor
-    
+
     # Mock pour la classe DBConnection qui utilise le gestionnaire de contexte
     mock_db_instance = MagicMock()
     mock_db_instance.__enter__ = MagicMock(return_value=mock_connection)
     mock_db_instance.__exit__ = MagicMock(return_value=None)
-    
+
     with patch('connect_db.DBConnection', return_value=mock_db_instance), \
          patch('controller.login_controller.DBConnection', return_value=mock_db_instance), \
          patch('controller.prediction_controller.DBConnection', return_value=mock_db_instance), \
@@ -73,7 +76,6 @@ def mock_db_connection():
 def auth_headers(test_app):
     """Fixture pour les headers d'authentification JWT."""
     with test_app.app_context():
-        from flask_jwt_extended import create_access_token
         token = create_access_token(identity='1')
         return {'Authorization': f'Bearer {token}'}
 
@@ -117,7 +119,6 @@ def sample_disease_data():
 @pytest.fixture(scope='function')
 def sample_prediction_data():
     """Fixture pour les données de prédiction de test."""
-    from datetime import date
     return {
         'id_prediction': 1,
         'id_country': 1,
@@ -145,4 +146,4 @@ def sample_prediction_data():
 def clean_db_patches():
     """Nettoie les patches après chaque test."""
     yield
-    # Cleanup automatique des patches 
+    # Cleanup automatique des patches
