@@ -2,9 +2,9 @@
 Tests pour le module log_controller.py
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
-from flask_jwt_extended import create_access_token
+import pytest                                       # type: ignore
+from unittest.mock import patch, MagicMock          # type: ignore
+from flask_jwt_extended import create_access_token  # type: ignore
 from datetime import date, datetime
 from decimal import Decimal
 
