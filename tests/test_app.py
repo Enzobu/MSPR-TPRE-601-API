@@ -15,7 +15,7 @@ class TestApp:
         """Test de la route home."""
         response = client.get('/')
         assert response.status_code == 200
-        assert response.json == {"message": "L'API fonctionne correctement"}
+        assert response.json == {"message": "API is working correctly"}
     
     def test_app_configuration(self, test_app):
         """Test de la configuration de l'application."""
@@ -53,7 +53,7 @@ class TestApp:
             
             response = client.get('/protected', headers=headers)
             assert response.status_code == 200
-            assert 'Bienvenue' in response.json['message']
+            assert 'Welcome' in response.json['message']
     
     def test_protected_route_with_invalid_token(self, client):
         """Test de la route protégée avec token invalide."""
@@ -80,6 +80,7 @@ class TestPasswordHashing:
     def test_hash_password(self, mock_hashpw, mock_gensalt):
         """Test de la fonction hash_password."""
         app_module = sys.modules.get('app_module')
+        assert app_module is not None
         
         mock_gensalt.return_value = b'fake_salt'
         mock_hashpw.return_value = b'hashed_password'
@@ -93,6 +94,8 @@ class TestPasswordHashing:
     def test_hash_password_integration(self):
         """Test d'intégration du hashage de mot de passe."""
         app_module = sys.modules.get('app_module')
+        assert app_module is not None
+            
         import bcrypt
         
         password = 'test_password'
