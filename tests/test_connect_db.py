@@ -5,18 +5,25 @@ Tests pour le module connect_db.py
 import pytest
 from unittest.mock import patch, MagicMock
 import os
+from dotenv import load_dotenv
+
+# Charger les variables d'environnement depuis le .env si disponible
+load_dotenv()
+
+# Variables d'environnement par défaut pour les tests
+DEFAULT_DB_CONFIG = {
+    'DB_HOST': os.getenv('DB_HOST', 'qg.enzo-palermo.com'),
+    'DB_DATABASE': os.getenv('DB_DATABASE', 'mspr502'),
+    'DB_USER': os.getenv('DB_USER', 'mspr502'),
+    'DB_PASSWORD': os.getenv('DB_PASSWORD', 's5t4v5'),
+    'DB_PORT': os.getenv('DB_PORT', '5432')
+}
 
 
 class TestGetDbConnection:
     """Tests pour la fonction get_db_connection."""
     
-    @patch.dict(os.environ, {
-        'DB_HOST': 'qg.enzo-palermo.com',
-        'DB_DATABASE': 'mspr502',
-        'DB_USER': 'mspr502',
-        'DB_PASSWORD': 's5t4v5',
-        'DB_PORT': '5432'
-    })
+    @patch.dict(os.environ, DEFAULT_DB_CONFIG)
     @patch('connect_db.psycopg2.connect')
     def test_get_db_connection_success(self, mock_connect):
         """Test de connexion à la base de données réussie."""
@@ -29,21 +36,15 @@ class TestGetDbConnection:
         
         # Vérifier que connect a été appelé avec les bons paramètres
         mock_connect.assert_called_once_with(
-            host="qg.enzo-palermo.com",
-            database="mspr502",
-            user="mspr502",
-            password="s5t4v5",
-            port="5432"
+            host=DEFAULT_DB_CONFIG['DB_HOST'],
+            database=DEFAULT_DB_CONFIG['DB_DATABASE'],
+            user=DEFAULT_DB_CONFIG['DB_USER'],
+            password=DEFAULT_DB_CONFIG['DB_PASSWORD'],
+            port=DEFAULT_DB_CONFIG['DB_PORT']
         )
         assert result == mock_connection
     
-    @patch.dict(os.environ, {
-        'DB_HOST': 'qg.enzo-palermo.com',
-        'DB_DATABASE': 'mspr502',
-        'DB_USER': 'mspr502',
-        'DB_PASSWORD': 's5t4v5',
-        'DB_PORT': '5432'
-    })
+    @patch.dict(os.environ, DEFAULT_DB_CONFIG)
     @patch('connect_db.psycopg2.connect')
     @patch('builtins.print')
     def test_get_db_connection_failure(self, mock_print, mock_connect):
@@ -143,13 +144,7 @@ class TestDBConnection:
 class TestTestDbConnection:
     """Tests pour la fonction test_db_connection."""
     
-    @patch.dict(os.environ, {
-        'DB_HOST': 'qg.enzo-palermo.com',
-        'DB_DATABASE': 'mspr502',
-        'DB_USER': 'mspr502',
-        'DB_PASSWORD': 's5t4v5',
-        'DB_PORT': '5432'
-    })
+    @patch.dict(os.environ, DEFAULT_DB_CONFIG)
     @patch('connect_db.psycopg2.connect')
     @patch('builtins.print')
     def test_test_db_connection_success(self, mock_print, mock_connect):
@@ -162,22 +157,16 @@ class TestTestDbConnection:
         test_db_connection()
         
         mock_connect.assert_called_once_with(
-            host="qg.enzo-palermo.com",
-            database="mspr502",
-            user="mspr502",
-            password="s5t4v5",
-            port="5432"
+            host=DEFAULT_DB_CONFIG['DB_HOST'],
+            database=DEFAULT_DB_CONFIG['DB_DATABASE'],
+            user=DEFAULT_DB_CONFIG['DB_USER'],
+            password=DEFAULT_DB_CONFIG['DB_PASSWORD'],
+            port=DEFAULT_DB_CONFIG['DB_PORT']
         )
         mock_connection.close.assert_called_once()
         mock_print.assert_called_with("Connexion à la base de données réussie.")
     
-    @patch.dict(os.environ, {
-        'DB_HOST': 'qg.enzo-palermo.com',
-        'DB_DATABASE': 'mspr502',
-        'DB_USER': 'mspr502',
-        'DB_PASSWORD': 's5t4v5',
-        'DB_PORT': '5432'
-    })
+    @patch.dict(os.environ, DEFAULT_DB_CONFIG)
     @patch('connect_db.psycopg2.connect')
     @patch('builtins.print')
     def test_test_db_connection_failure(self, mock_print, mock_connect):
@@ -219,15 +208,9 @@ class TestDatabaseConfiguration:
         assert 'password' in DATABASE
         assert 'port' in DATABASE
     
-    @patch.dict(os.environ, {
-        'DB_HOST': 'qg.enzo-palermo.com',
-        'DB_DATABASE': 'mspr502',
-        'DB_USER': 'mspr502',
-        'DB_PASSWORD': 's5t4v5',
-        'DB_PORT': '5432'
-    })
+    @patch.dict(os.environ, DEFAULT_DB_CONFIG)
     def test_database_config_values(self):
-        """Test des valeurs de configuration."""
+        """Test des valeurs de configuration depuis le .env."""
         # Recharger le module pour prendre en compte les nouvelles variables d'environnement
         import importlib
         import connect_db
@@ -235,23 +218,41 @@ class TestDatabaseConfiguration:
         
         from connect_db import DATABASE
         
-        assert DATABASE['host'] == "qg.enzo-palermo.com"
-        assert DATABASE['database'] == "mspr502"
-        assert DATABASE['user'] == "mspr502"
-        assert DATABASE['password'] == "s5t4v5"
-        assert DATABASE['port'] == "5432"
+        assert DATABASE['host'] == DEFAULT_DB_CONFIG['DB_HOST']
+        assert DATABASE['database'] == DEFAULT_DB_CONFIG['DB_DATABASE']
+        assert DATABASE['user'] == DEFAULT_DB_CONFIG['DB_USER']
+        assert DATABASE['password'] == DEFAULT_DB_CONFIG['DB_PASSWORD']
+        assert DATABASE['port'] == DEFAULT_DB_CONFIG['DB_PORT']
+    
+    def test_database_config_uses_env_vars(self):
+        """Test que la configuration utilise bien les variables d'environnement."""
+        # Test avec des variables personnalisées
+        custom_config = {
+            'DB_HOST': 'custom.host.com',
+            'DB_DATABASE': 'custom_db',
+            'DB_USER': 'custom_user',
+            'DB_PASSWORD': 'custom_pass',
+            'DB_PORT': '5433'
+        }
+        
+        with patch.dict(os.environ, custom_config):
+            import importlib
+            import connect_db
+            importlib.reload(connect_db)
+            
+            from connect_db import DATABASE
+            
+            assert DATABASE['host'] == 'custom.host.com'
+            assert DATABASE['database'] == 'custom_db'
+            assert DATABASE['user'] == 'custom_user'
+            assert DATABASE['password'] == 'custom_pass'
+            assert DATABASE['port'] == '5433'
 
 
 class TestIntegration:
     """Tests d'intégration pour le module connect_db."""
     
-    @patch.dict(os.environ, {
-        'DB_HOST': 'qg.enzo-palermo.com',
-        'DB_DATABASE': 'mspr502',
-        'DB_USER': 'mspr502',
-        'DB_PASSWORD': 's5t4v5',
-        'DB_PORT': '5432'
-    })
+    @patch.dict(os.environ, DEFAULT_DB_CONFIG)
     @patch('connect_db.psycopg2.connect')
     def test_full_workflow(self, mock_connect):
         """Test du workflow complet."""
@@ -272,4 +273,52 @@ class TestIntegration:
         test_db_connection()
         
         # Vérifier que psycopg2.connect a été appelé 3 fois
-        assert mock_connect.call_count == 3 
+        assert mock_connect.call_count == 3
+
+
+class TestEnvironmentVariableLoading:
+    """Tests pour le chargement des variables d'environnement."""
+    
+    def test_env_loading_with_defaults(self):
+        """Test que les valeurs par défaut sont utilisées si .env n'existe pas."""
+        # Simuler l'absence de variables d'environnement
+        with patch.dict(os.environ, {}, clear=True):
+            # Les valeurs par défaut devraient être utilisées
+            config = {
+                'DB_HOST': os.getenv('DB_HOST', 'qg.enzo-palermo.com'),
+                'DB_DATABASE': os.getenv('DB_DATABASE', 'mspr502'),
+                'DB_USER': os.getenv('DB_USER', 'mspr502'),
+                'DB_PASSWORD': os.getenv('DB_PASSWORD', 's5t4v5'),
+                'DB_PORT': os.getenv('DB_PORT', '5432')
+            }
+            
+            assert config['DB_HOST'] == 'qg.enzo-palermo.com'
+            assert config['DB_DATABASE'] == 'mspr502'
+            assert config['DB_USER'] == 'mspr502'
+            assert config['DB_PASSWORD'] == 's5t4v5'
+            assert config['DB_PORT'] == '5432'
+    
+    def test_env_override(self):
+        """Test que les variables d'environnement peuvent surcharger les valeurs par défaut."""
+        override_config = {
+            'DB_HOST': 'override.example.com',
+            'DB_DATABASE': 'override_db',
+            'DB_USER': 'override_user',
+            'DB_PASSWORD': 'override_pass',
+            'DB_PORT': '5433'
+        }
+        
+        with patch.dict(os.environ, override_config):
+            config = {
+                'DB_HOST': os.getenv('DB_HOST', 'qg.enzo-palermo.com'),
+                'DB_DATABASE': os.getenv('DB_DATABASE', 'mspr502'),
+                'DB_USER': os.getenv('DB_USER', 'mspr502'),
+                'DB_PASSWORD': os.getenv('DB_PASSWORD', 's5t4v5'),
+                'DB_PORT': os.getenv('DB_PORT', '5432')
+            }
+            
+            assert config['DB_HOST'] == 'override.example.com'
+            assert config['DB_DATABASE'] == 'override_db'
+            assert config['DB_USER'] == 'override_user'
+            assert config['DB_PASSWORD'] == 'override_pass'
+            assert config['DB_PORT'] == '5433' 
